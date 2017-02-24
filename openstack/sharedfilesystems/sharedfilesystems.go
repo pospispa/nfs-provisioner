@@ -7,10 +7,30 @@ import (
 
 	"github.com/gophercloud/gophercloud/openstack/sharedfilesystems/v2/shares"
 	"github.com/kubernetes-incubator/nfs-provisioner/controller"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/pkg/api/resource"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/client-go/pkg/types"
+	"k8s.io/kubernetes/pkg/volume"
 )
+
+// TO BE DELETED after the below function(s) are merged into k8s
+
+// zonesToSet converts a string containing a comma separated list of zones to set
+func zonesToSet(zonesString string) (sets.String, error) {
+	zonesSlice := strings.Split(zonesString, ",")
+	zonesSet := make(sets.String)
+	for _, zone := range zonesSlice {
+		trimmedZone := strings.TrimSpace(zone)
+		if trimmedZone == "" {
+			return make(sets.String), fmt.Errorf("comma separated list of zones (%q) must not contain an empty zone", zonesString)
+		}
+		zonesSet.Insert(trimmedZone)
+	}
+	return zonesSet, nil
+}
+
+// TO BE DELETED after the above function(s) are merged into k8s
 
 // SharedFilesystemProvisioner is a class representing OpenStack Shared Filesystem external provisioner
 type SharedFilesystemProvisioner struct {
@@ -70,7 +90,11 @@ func prepareCreateRequest(options controller.VolumeOptions) (shares.CreateOpts, 
 	for index, value := range options.Parameters {
 		switch strings.ToLower(index) {
 		case ZonesSCParamName:
-			request.AvailabilityZone = value
+			if setOfZones, err := zonesToSet(value); err != nil {
+				return request, err
+			} else {
+				request.AvailabilityZone = volume.ChooseZoneForVolume(setOfZones, options.PVC.Name)
+			}
 		default:
 			return request, fmt.Errorf("invalid parameter %q", "foo")
 		}

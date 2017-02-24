@@ -87,29 +87,29 @@ func TestPrepareCreateRequest(t *testing.T) {
 				Size:             2,
 			},
 		},
-		//		{
-		//			volumeOptions: controller.VolumeOptions{
-		//				PersistentVolumeReclaimPolicy: "Delete",
-		//				PVName: "pv",
-		//				PVC: &v1.PersistentVolumeClaim{
-		//					ObjectMeta: v1.ObjectMeta{Name: "pvc", Namespace: "foo"},
-		//					Spec: v1.PersistentVolumeClaimSpec{
-		//						Resources: v1.ResourceRequirements{
-		//							Requests: v1.ResourceList{
-		//								v1.ResourceStorage: resource.Quantity{},
-		//							},
-		//						},
-		//					},
-		//				},
-		//				Parameters: map[string]string{ZonesSCParamName: "nova1, nova2, nova3"},
-		//			},
-		//			storageSize: "2G",
-		//			want: shares.CreateOpts{
-		//				ShareProto:       ProtocolNFS,
-		//				AvailabilityZone: "nova1",
-		//				Size:             2,
-		//			},
-		//		},
+		{
+			volumeOptions: controller.VolumeOptions{
+				PersistentVolumeReclaimPolicy: "Delete",
+				PVName: "pv",
+				PVC: &v1.PersistentVolumeClaim{
+					ObjectMeta: v1.ObjectMeta{Name: "pvc", Namespace: "foo"},
+					Spec: v1.PersistentVolumeClaimSpec{
+						Resources: v1.ResourceRequirements{
+							Requests: v1.ResourceList{
+								v1.ResourceStorage: resource.Quantity{},
+							},
+						},
+					},
+				},
+				Parameters: map[string]string{ZonesSCParamName: "nova1, nova2, nova3"},
+			},
+			storageSize: "2G",
+			want: shares.CreateOpts{
+				ShareProto:       ProtocolNFS,
+				AvailabilityZone: "nova1",
+				Size:             2,
+			},
+		},
 	}
 	for _, succCase := range succCases {
 		if quantity, err := resource.ParseQuantity(succCase.storageSize); err != nil {
